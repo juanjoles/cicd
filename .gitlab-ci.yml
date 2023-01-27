@@ -1,0 +1,57 @@
+image: node:12-alpine3.14
+
+variables:
+  STACK: "Juan-Jose-Lescano-Ci-Cd"
+  REGION: "us-east-1"
+
+stages:
+  - init
+  - test
+  - deploy
+  - remove
+
+install_dependencies:
+  stage: init
+  script:
+    - npm install
+  artifacts:
+    paths:
+      - "./node_modules"
+    expire_in: 30 min
+
+#unit_test:
+ # stage: test
+  #script:
+   # - cd hello-world
+    #- npm run test
+  
+#lint: 
+ # stage: test 
+  #script:
+   # - echo "correr el lint"
+
+coverage:
+  stage: test
+  script: 
+    - echo "correr coverage"
+    - cat coverage.txt
+  allow_failure: true
+
+deploy_sam:
+  stage: deploy
+
+  artifacts:
+    paths:
+      - "./node_modules"
+  script: 
+    - echo "deploy con serverless"
+    - sls --version
+    - sls deploy --verbose --region $REGION
+    
+remove_sam:
+  stage: remove
+  script: 
+    - echo "eliminar stack sam"
+    - sls remove --stack-name $STACK --region $REGION --no-prompts
+  when: manual
+  dependencies: []  
